@@ -47,8 +47,8 @@ class CategoryManager {
         this.newCategoryInput.value = '';
         this.saveCategories();
         this.renderCategories();
-        this.renderCategoryFilter();
         this.renderCategorySelect();
+        this.onCategoriesChanged();
     }
     
     deleteCategory(categoryId) {
@@ -77,8 +77,8 @@ class CategoryManager {
         this.checklist.saveToStorage();
         this.checklist.render();
         this.renderCategories();
-        this.renderCategoryFilter();
         this.renderCategorySelect();
+        this.onCategoriesChanged();
     }
     
     generateCategoryColor() {
@@ -108,41 +108,8 @@ class CategoryManager {
         }).join('');
     }
     
-    renderCategoryFilter() {
-        const allItemsCount = this.checklist.items.length;
-        const checkedItems = this.checklist.items.filter(item => item.checked).length;
-        const uncheckedItems = this.checklist.items.filter(item => !item.checked).length;
-        
-        let filterHTML = `
-            <button class="category-filter-btn ${this.checklist.currentCategoryFilter === 'all' ? 'active' : ''}" 
-                    data-category-filter="all">All Items (${allItemsCount})</button>
-            <button class="category-filter-btn ${this.checklist.currentCategoryFilter === 'unchecked' ? 'active' : ''}" 
-                    data-category-filter="unchecked">Unchecked (${uncheckedItems})</button>
-            <button class="category-filter-btn ${this.checklist.currentCategoryFilter === 'checked' ? 'active' : ''}" 
-                    data-category-filter="checked">Checked (${checkedItems})</button>
-        `;
-        
-        this.checklist.categories.forEach(category => {
-            const categoryItems = this.checklist.items.filter(item => item.categoryId === category.id);
-            const categoryFilter = `category-${category.id}`;
-            const isActive = this.checklist.currentCategoryFilter === categoryFilter;
-            filterHTML += `
-                <button class="category-filter-btn ${isActive ? 'active' : ''}" 
-                        data-category-filter="${categoryFilter}" 
-                        style="border-left: 3px solid ${category.color}">
-                    ${this.escapeHtml(category.name)} (${categoryItems.length})
-                </button>
-            `;
-        });
-        
-        this.categoryFilterContainer.innerHTML = filterHTML;
-        
-        // Add event listeners to category filter buttons
-        this.categoryFilterContainer.querySelectorAll('.category-filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                this.checklist.setCategoryFilter(e.target.dataset.categoryFilter);
-            });
-        });
+    onCategoriesChanged() {
+        this.checklist.renderUnifiedFilters();
     }
     
     renderCategorySelect() {

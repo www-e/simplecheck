@@ -3,13 +3,12 @@
                 this.items = [];
                 this.categories = [];
                 this.currentFilter = 'all';
-                this.currentCategoryFilter = 'all';
                 this.nextId = 1;
                 
                 this.newItemInput = document.getElementById('newItemInput');
                 this.addButton = document.getElementById('addButton');
                 this.checklistContainer = document.getElementById('checklistContainer');
-                this.filterButtons = document.querySelectorAll('.filter-btn');
+                this.unifiedFilterContainer = document.getElementById('unifiedFilterContainer');
                 this.categorySelect = document.getElementById('categorySelect');
                 
                 this.init();
@@ -21,11 +20,8 @@
                     if (e.key === 'Enter') this.addItem();
                 });
                 
-                this.filterButtons.forEach(btn => {
-                    btn.addEventListener('click', (e) => this.setFilter(e.target.dataset.filter));
-                });
-                
                 this.loadFromStorage();
+                this.renderUnifiedFilters();
                 this.render();
                 
                 // Initialize bulk add manager
@@ -43,7 +39,8 @@
                     id: this.nextId++,
                     text: itemText,
                     checked: false,
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    notes: ''
                 };
                 
                 // Add category if selected (either from dropdown or bulk add)
@@ -62,7 +59,7 @@
                 
                 // Update category displays
                 this.categoryManager.renderCategories();
-                this.categoryManager.renderCategoryFilter();
+                this.renderUnifiedFilters();
             }
             
             toggleItem(id) {
@@ -82,24 +79,50 @@
             
             setFilter(filter) {
                 this.currentFilter = filter;
-                
-                this.filterButtons.forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.filter === filter);
-                });
-                
+                this.renderUnifiedFilters();
                 this.render();
             }
             
-            setCategoryFilter(categoryFilter) {
-                this.currentCategoryFilter = categoryFilter;
-                this.categoryManager.renderCategoryFilter();
-                this.render();
+            renderUnifiedFilters() {
+                const allItemsCount = this.items.length;
+                const checkedItems = this.items.filter(item => item.checked).length;
+                const uncheckedItems = this.items.filter(item => !item.checked).length;
+                
+                let filterHTML = `
+                    <button class="filter-btn ${this.currentFilter === 'all' ? 'active' : ''}" 
+                            data-filter="all">All Items (${allItemsCount})</button>
+                    <button class="filter-btn ${this.currentFilter === 'unchecked' ? 'active' : ''}" 
+                            data-filter="unchecked">Unchecked (${uncheckedItems})</button>
+                    <button class="filter-btn ${this.currentFilter === 'checked' ? 'active' : ''}" 
+                            data-filter="checked">Checked (${checkedItems})</button>
+                `;
+                
+                this.categories.forEach(category => {
+                    const categoryItems = this.items.filter(item => item.categoryId === category.id);
+                    const isActive = this.currentFilter === `category-${category.id}`;
+                    filterHTML += `
+                        <button class="filter-btn ${isActive ? 'active' : ''}" 
+                                data-filter="category-${category.id}" 
+                                style="border-left: 3px solid ${category.color}">
+                            ${this.escapeHtml(category.name)} (${categoryItems.length})
+                        </button>
+                    `;
+                });
+                
+                this.unifiedFilterContainer.innerHTML = filterHTML;
+                
+                // Add event listeners to filter buttons
+                this.unifiedFilterContainer.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.setFilter(e.target.dataset.filter);
+                    });
+                });
             }
             
             getFilteredItems() {
                 let filteredItems = this.items;
                 
-                // Apply status filter
+                // Apply unified filter
                 switch (this.currentFilter) {
                     case 'checked':
                         filteredItems = filteredItems.filter(item => item.checked);
@@ -107,14 +130,12 @@
                     case 'unchecked':
                         filteredItems = filteredItems.filter(item => !item.checked);
                         break;
-                }
-                
-                // Apply category filter
-                if (this.currentCategoryFilter !== 'all') {
-                    if (this.currentCategoryFilter.startsWith('category-')) {
-                        const categoryId = parseInt(this.currentCategoryFilter.replace('category-', ''));
-                        filteredItems = filteredItems.filter(item => item.categoryId === categoryId);
-                    }
+                    default:
+                        if (this.currentFilter.startsWith('category-')) {
+                            const categoryId = parseInt(this.currentFilter.replace('category-', ''));
+                            filteredItems = filteredItems.filter(item => item.categoryId === categoryId);
+                        }
+                        break;
                 }
                 
                 return filteredItems;
@@ -131,6 +152,8 @@
                 this.checklistContainer.innerHTML = filteredItems.map((item, index) => {
                     const category = item.categoryId ? this.categories.find(cat => cat.id === item.categoryId) : null;
                     const categoryStyle = category ? `style="border-left: 4px solid ${category.color}"` : '';
+                    const notesBtnClass = item.notes && item.notes.trim() ? 'notes-btn has-notes' : 'notes-btn';
+                    const notesDisplay = item.notes && item.notes.trim() ? `<div class="item-notes">${this.escapeHtml(item.notes)}</div>` : '';
                     
                     return `
                         <li class="checklist-item ${item.checked ? 'checked' : ''}" data-id="${item.id}" ${categoryStyle}>
@@ -144,10 +167,26 @@
                                     `<option value="${cat.id}" ${item.categoryId === cat.id ? 'selected' : ''}>${this.escapeHtml(cat.name)}</option>`
                                 ).join('')}
                             </select>
+                            <button class="${notesBtnClass}" onclick="checklist.editNotes(${item.id})" title="Add/Edit Notes">📝</button>
                             <button class="delete-btn" onclick="checklist.deleteItem(${item.id})">Delete</button>
+                            ${notesDisplay}
                         </li>
                     `;
                 }).join('');
+            }
+            
+            editNotes(itemId) {
+                const item = this.items.find(item => item.id === itemId);
+                if (!item) return;
+                
+                const currentNotes = item.notes || '';
+                const newNotes = prompt('Enter notes for this task:', currentNotes);
+                
+                if (newNotes !== null) {
+                    item.notes = newNotes;
+                    this.saveToStorage();
+                    this.render();
+                }
             }
             
             escapeHtml(text) {
