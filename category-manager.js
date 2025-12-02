@@ -4,7 +4,6 @@ class CategoryManager {
         this.nextCategoryId = 1;
         
         this.categoriesContainer = document.getElementById('categoriesContainer');
-        this.categoryFilterContainer = document.getElementById('categoryFilterContainer');
         this.categorySelect = document.getElementById('categorySelect');
         this.newCategoryInput = document.getElementById('newCategoryInput');
         this.addCategoryButton = document.getElementById('addCategoryButton');
@@ -16,7 +15,6 @@ class CategoryManager {
         // Load categories from storage or create default
         this.loadCategories();
         this.renderCategories();
-        this.renderCategoryFilter();
         this.renderCategorySelect();
         
         // Event listeners
@@ -69,8 +67,8 @@ class CategoryManager {
         });
         
         // Clear current filter if it was this category
-        if (this.checklist.currentCategoryFilter === `category-${categoryId}`) {
-            this.checklist.setCategoryFilter('all');
+        if (this.checklist.currentFilter === `category-${categoryId}`) {
+            this.checklist.setFilter('all');
         }
         
         this.saveCategories();
@@ -136,7 +134,7 @@ class CategoryManager {
             this.checklist.saveToStorage();
             this.checklist.render();
             this.renderCategories();
-            this.renderCategoryFilter();
+            this.onCategoriesChanged();
         }
     }
     

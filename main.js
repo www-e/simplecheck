@@ -218,4 +218,5 @@
             }
         }
         
-        const checklist = new Checklist();
+        // Make checklist globally accessible for onclick handlers
+        window.checklist = new Checklist();
