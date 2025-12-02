@@ -1,3 +1,4 @@
+// Category Manager v2.0 - Fixed filter issues
 class CategoryManager {
     constructor(checklistInstance) {
         this.checklist = checklistInstance;
@@ -12,16 +13,24 @@ class CategoryManager {
     }
     
     init() {
-        // Load categories from storage or create default
-        this.loadCategories();
-        this.renderCategories();
-        this.renderCategorySelect();
-        
-        // Event listeners
-        this.addCategoryButton.addEventListener('click', () => this.addCategory());
-        this.newCategoryInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.addCategory();
-        });
+        try {
+            console.log('CategoryManager init starting...');
+            
+            // Load categories from storage or create default
+            this.loadCategories();
+            this.renderCategories();
+            this.renderCategorySelect();
+            
+            // Event listeners
+            this.addCategoryButton.addEventListener('click', () => this.addCategory());
+            this.newCategoryInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.addCategory();
+            });
+            
+            console.log('CategoryManager init completed successfully');
+        } catch (error) {
+            console.error('Error in CategoryManager.init():', error);
+        }
     }
     
     addCategory() {

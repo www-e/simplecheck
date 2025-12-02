@@ -15,20 +15,28 @@
             }
             
             init() {
-                this.addButton.addEventListener('click', () => this.addItem());
-                this.newItemInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.addItem();
-                });
-                
-                this.loadFromStorage();
-                this.renderUnifiedFilters();
-                this.render();
-                
-                // Initialize bulk add manager
-                this.bulkAddManager = new BulkAddManager(this);
-                
-                // Initialize category manager
-                this.categoryManager = new CategoryManager(this);
+                try {
+                    console.log('Checklist init starting...');
+                    
+                    this.addButton.addEventListener('click', () => this.addItem());
+                    this.newItemInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.addItem();
+                    });
+                    
+                    this.loadFromStorage();
+                    this.renderUnifiedFilters();
+                    this.render();
+                    
+                    // Initialize bulk add manager
+                    this.bulkAddManager = new BulkAddManager(this);
+                    
+                    // Initialize category manager
+                    this.categoryManager = new CategoryManager(this);
+                    
+                    console.log('Checklist init completed successfully');
+                } catch (error) {
+                    console.error('Error in Checklist.init():', error);
+                }
             }
             
             addItem(text = null, categoryId = null) {
@@ -220,3 +228,8 @@
         
         // Make checklist globally accessible for onclick handlers
         window.checklist = new Checklist();
+        
+        // Ensure category manager has access to the global checklist
+        if (window.checklist.categoryManager) {
+            window.checklist.categoryManager.checklist = window.checklist;
+        }
