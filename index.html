@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Checklist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Simple Checklist</h1>
+        
+        <div class="input-section">
+            <input type="text" id="newItemInput" placeholder="Enter a new item...">
+            <select id="categorySelect">
+                <option value="">No category</option>
+            </select>
+            <button id="addButton">Add</button>
+            <button id="bulkAddButton">Bulk Add</button>
+        </div>
+        
+        <!-- Category Management -->
+        <div class="category-section">
+            <h3>Categories</h3>
+            <div class="category-input-section">
+                <input type="text" id="newCategoryInput" placeholder="Enter a new category...">
+                <button id="addCategoryButton">Add Category</button>
+            </div>
+            <div id="categoriesContainer" class="categories-container"></div>
+        </div>
+        
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All Items</button>
+            <button class="filter-btn" data-filter="unchecked">Unchecked</button>
+            <button class="filter-btn" data-filter="checked">Checked</button>
+        </div>
+        
+        <div class="category-filters">
+            <h3>Filter by Category</h3>
+            <div id="categoryFilterContainer" class="category-filter-container"></div>
+        </div>
+        
+        <ul id="checklistContainer"></ul>
+    </div>
+
+    <!-- Bulk Add Modal -->
+    <div id="bulkAddModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Bulk Add Checklist Items</h2>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Enter each item on a separate line:</p>
+                <div class="bulk-category-section">
+                    <label for="bulkCategorySelect">Category for all items:</label>
+                    <select id="bulkCategorySelect">
+                        <option value="">No category</option>
+                    </select>
+                </div>
+                <textarea id="bulkItemsInput" placeholder="Item 1&#10;Item 2&#10;Item 3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button id="bulkAddConfirm">Add Items</button>
+                <button id="bulkAddCancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+ 
+</body>
+
+<script src="bulk-add.js"></script>
+<script src="category-manager.js"></script>
+<script src="main.js"></script>
+</html>
